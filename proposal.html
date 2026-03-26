@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel Minimum Spanning Tree Library (Online)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #fcfcfc;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 1.5rem;
+        }
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+        .authors {
+            font-size: 1.2rem;
+            color: #555;
+            font-style: italic;
+        }
+        h2 {
+            color: #0056b3;
+            margin-top: 2rem;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 0.3rem;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        ul {
+            margin-bottom: 1.5rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        a {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        strong {
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Parallel Minimum Spanning Tree Library (Online)</h1>
+        <div class="authors">Linxuan Ma, Joseph Wan</div>
+    </header>
+
+    <section>
+        <h2>Summary</h2>
+        <p>We are going to implement a parallel graph processing library in OpenMP for computing minimum spanning trees dynamically with low-latency graph update. By parallelizing algorithms like Prim's and Boruvka's, we aim to trade strict optimality of the generated MST for performance. As an extension, we plan to implement a CUDA-based feature to generate diagnostic and analytical information on the graph objects.</p>
+    </section>
+
+    <section>
+        <h2>Background</h2>
+        <p>Minimum spanning tree (MST) is a fundamental problem crucial for tasks like network routing, clustering, and pathfinding. In many real-world applications, graphs are dynamic and experience frequent updates. It is computationally expensive to recompute the MST for every update, yet popular MST algorithms like Prim’s assume a static graph as input. Worse, most existing MST algorithms are sequential and do not scale to benefit from a parallel system. To resolve this problem, our project aims to create a parallel library that handles dynamic graph updates while maintaining a close-to-optimal MST. We will accomplish this by parallelizing standard MST algorithms such as Prim's and Boruvka's using OpenMP.</p>
+        <p>The primary strategies of this problem that can benefit from parallelism are <strong>parallel vertex operations</strong> and <strong>graph partitioning</strong>. In our project, we explore both options by implementing these techniques as generic parallel primitives, which we then specialize into parallelized versions of MST algorithms.</p>
+    </section>
+
+    <section>
+        <h2>The Challenge</h2>
+        <ul>
+            <li><strong>Workload:</strong> Graph traversals typically have poor spatial locality because vertices can have different degrees and an edge can connect two vertices that are scattered in the memory. Moreover, graphs have uneven connectivity and complex dependencies, which makes parallelization difficult.</li>
+            <li><strong>Constraints:</strong> When using a graph partitioning strategy to compute local sub-solutions, combining these local structures on request will likely result in a high communication to computation ratio.</li>
+            <li><strong>Implementation:</strong> Choosing the right granularity for distributing work on the graph (too small: solution quality suffers as the MST will be too local and fail to capture global structure; too big: underutilizes resources). Another challenge is finding a partitioning or scheduling heuristic that allows parallelism without degrading solution quality too much.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Resources</h2>
+        <p>We will use the GHC and PSC machines to test our shared-memory OpenMP implementations on different numbers of threads. We plan to build the core graph processing library and MST algorithms from scratch using C++.</p>
+        <p>We are planning to reference the following resources:</p>
+        <ul>
+            <li>15-210 Textbook (parallel graph algorithms section)</li>
+            <li>“A Shared-Memory Algorithm for Updating Tree-Based Properties of Large Dynamic Networks”: <a href="https://ieeexplore.ieee.org/document/8464249" target="_blank">https://ieeexplore.ieee.org/document/8464249</a></li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Goals (Plan to Achieve)</h2>
+        <ul>
+            <li>Implement vertex parallelization strategy by using OpenMP to parallelize on the vertices on the graph to process multiple vertex contractions and edge relaxations concurrently.</li>
+            <li>Implement graph partition strategy by partitioning the graph into subgraphs and parallelizing each of them. We will obtain a local solution/data structure for each subgraph, then combine them on request to form the overall solution.</li>
+            <li>Achieve 4x speedup on the GHC machines with 8 threads (on the baseline graph, a hypothetical graph with uniform connection patterns).</li>
+            <li>Achieve better-than-sequential speedup on ANY graph (including adversarial inputs).</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Goals (Hope to Achieve)</h2>
+        <ul>
+            <li>CUDA extension to generate diagnostic/analytical information on graph objects in our library.</li>
+            <li>Match the performance of MST generation described in “A Shared-Memory Algorithm…” paper with our implementation with parallel graph primitives.</li>
+            <li>The library should automatically choose the best heuristic based on analytical information on the graph.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Platform of Choice</h2>
+        <p>We plan to choose <strong>OpenMP</strong> as our platform. It makes sense because graph processing requires cheap communication and heterogeneous control-flow, so OpenMP’s light-weighted threads are very suitable. We plan on using a shared-memory machine for low communication cost and cache-friendliness.</p>
+    </section>
+
+    <section>
+        <h2>Schedule</h2>
+        <ul>
+            <li><strong>By April 3:</strong> vertex-based parallelism, baseline &amp; specialized graph data for benchmarking</li>
+            <li><strong>By April 6:</strong> graph partitioning primitives, graph analytics with CUDA</li>
+            <li><strong>By April 12:</strong> fully implement Prim’s and Boruvka's, start on milestone report</li>
+            <li><strong>By April 18:</strong> refinement &amp; optimization, benchmark baseline for final report</li>
+            <li><strong>By April 22:</strong> optimize, run on GHC &amp; collect speedup &amp; cache data, start on final report</li>
+            <li><strong>By April 27:</strong> run on PSC, improve scaling, finish final report</li>
+        </ul>
+    </section>
+
+</body>
+</html>
