@@ -144,12 +144,16 @@
                 <div class="link-title">Milestone Report</div>
                 <div class="link-desc">Progress update, preliminary results, and revised schedule</div>
             </a>
+            <a class="link-card" href="15_418_Final_Report.pdf">
+                <div class="link-title">Final Report</div>
+                <div class="link-desc">Complete evaluation, benchmarks, and conclusions</div>
+            </a>
         </div>
     </section>
 
     <section>
         <h2>Summary</h2>
-        <p>We implement a parallel graph processing library in C++ for computing minimum spanning trees on large static graphs, with OpenMP and CUDA backends. We benchmark edge-parallel Borůvka's algorithm across a diverse suite of graph types and sizes, and explore graph decomposition strategies to optimally assign subgraphs to the appropriate compute backend.</p>
+        <p>We implemented a parallel graph-processing program for minimum spanning tree computation, focusing on workloads where the graph topology remains fixed while edge weights change across rounds. We evaluated multiple implementations, in OpenMP and CUDA, on graph snapshots with varying structural properties to understand where each approach performs well and where it encounters bottlenecks. Based on these findings, we designed a hybrid heterogeneous strategy that orchestrates the CPU and GPU implementations in parallel to hide GPU latency and match algorithmic choices to graph characteristics. On CMU GHC machines using 8 CPU cores and CUDA, our Hybrid strategy amortizes its preprocessing cost after ≈ 6 MST rounds and achieves about half the per-round time of the one-shot MP and CU strategies on our mixed sparse/dense R-MAT workload.</p>
     </section>
 
     <section>
